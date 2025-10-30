@@ -1,0 +1,5 @@
+{
+  "name": "🔎 L10n LVM Bug Reader",
+  "description": "An application for localization QA analysts to process screenshot reports of linguist-reported translation bugs. Users can paste screenshots directly, and the app uses AI to extract structured data and provide an expert diagnosis.",
+  "requestFramePermissions": []
+}
