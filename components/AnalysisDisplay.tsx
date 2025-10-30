@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import type { AnalysisResult } from '../types';
 
 interface AnalysisDisplayProps {
@@ -7,9 +7,11 @@ interface AnalysisDisplayProps {
     onReset: () => void;
 }
 
-const Card: React.FC<{ title: string; children: React.ReactNode, className?: string }> = ({ title, children, className }) => (
+const Card: React.FC<{ title: React.ReactNode; children: React.ReactNode, className?: string }> = ({ title, children, className }) => (
     <div className={`card bg-white border border-gray-200 rounded-lg shadow-sm p-6 mb-6 ${className}`}>
-        <h2 className="text-xl font-semibold text-gray-800 border-b border-gray-200 pb-2 mb-4">{title}</h2>
+        <div className="border-b border-gray-200 pb-2 mb-4">
+            {typeof title === 'string' ? <h2 className="text-xl font-semibold text-gray-800">{title}</h2> : title}
+        </div>
         {children}
     </div>
 );
@@ -24,6 +26,35 @@ const DetailItem: React.FC<{ label: string; children: React.ReactNode }> = ({ la
 
 const AnalysisDisplay: React.FC<AnalysisDisplayProps> = ({ result, onReset }) => {
     const { analysisA, analysisB } = result;
+    const [copyStatus, setCopyStatus] = useState('Copy');
+
+    const handleCopyStringIds = () => {
+        if (!navigator.clipboard || analysisA.stringIds.length === 0) return;
+        
+        const textToCopy = analysisA.stringIds.join('\n');
+        navigator.clipboard.writeText(textToCopy).then(() => {
+            setCopyStatus('Copied!');
+            setTimeout(() => setCopyStatus('Copy'), 2000);
+        }).catch(() => {
+            setCopyStatus('Failed!');
+            setTimeout(() => setCopyStatus('Copy'), 2000);
+        });
+    };
+
+    const stringIdsTitle = (
+        <div className="flex justify-between items-center">
+            <h2 className="text-xl font-semibold text-gray-800">String IDs</h2>
+            {analysisA.stringIds.length > 0 && (
+                 <button
+                    onClick={handleCopyStringIds}
+                    className="px-3 py-1 text-xs font-medium text-indigo-700 bg-indigo-100 rounded-md hover:bg-indigo-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={copyStatus !== 'Copy'}
+                >
+                    {copyStatus}
+                </button>
+            )}
+        </div>
+    );
 
     return (
         <div className="animate-fade-in">
@@ -50,9 +81,9 @@ const AnalysisDisplay: React.FC<AnalysisDisplayProps> = ({ result, onReset }) =>
                             <DetailItem label="Involved Projects">{analysisB.involvedProjects}</DetailItem>
                         </dl>
                     </Card>
-                    <Card title="String IDs">
+                    <Card title={stringIdsTitle}>
                         <pre className="bg-gray-100 p-3 border border-gray-200 rounded-md text-sm max-h-40 overflow-y-auto">
-                            {analysisA.stringIds.join('\n')}
+                            {analysisA.stringIds.length > 0 ? analysisA.stringIds.join('\n') : 'No String IDs found.'}
                         </pre>
                     </Card>
                     <Card title="Strings">
